@@ -1,17 +1,13 @@
-# Dynamic Difficulty
+# Validating the Blockchain
 ################################################################################
-# In this activity, you’ll continue to update your Python blockchain
-# application. Specifically, you’ll allow dynamic updates to the mining
-# difficulty through a Streamlit component.
+# In this activity, you’ll update your `PyChain` application with a method that
+# validates the entire blockchain.
 
 
 # You will need to complete the following steps:
-# 1. Add a `difficulty` attribute to the `PyChain` data class.
-# 2. Add a `num_of_zeros` data attribute to the `PyChain` data classes
-# `proof_of_work` method.
-# 3. Add a Streamlit component that allows a user to select the `difficulty`
-# value of the `proof_of_work` method.
-# 4. Test the application.
+# 1. Add a button with the text “Validate Blockchain” to your Streamlit interface.
+# 2. Code the "Validate Blockchain" button so that when it’s clicked, it writes the result to the webpage.
+# 3. Test the application.
 ################################################################################
 import streamlit as st
 from dataclasses import dataclass
@@ -21,7 +17,7 @@ import pandas as pd
 import hashlib
 
 ################################################################################
-# Creates the Block data class
+# Creates the Block and PyChain data classes
 
 
 @dataclass
@@ -52,32 +48,22 @@ class Block:
 
         return sha.hexdigest()
 
-################################################################################
-# Step 1:
-# Add a `difficulty` data attribute to the `PyChain` data class.
-# Use a data type of `int` and a default value of 4.
-
 
 @dataclass
 class PyChain:
     chain: List[Block]
-
-    # @TODO:
-    # Add a `difficulty` data attribute with a data type of `int` and a default
-    # value of 4.
     difficulty: int = 4
 
-# Step 2:
-# Add a `num_of_zeros` data attribute that multiplies the string value ("0") by the `difficulty` value.
     def proof_of_work(self, block):
+
         calculated_hash = block.hash_block()
 
-        # @TODO:
-        # Add a `num_of_zeros` data attribute that multiplies the string value ("0") by the `difficulty` value.
         num_of_zeros = "0" * self.difficulty
 
         while not calculated_hash.startswith(num_of_zeros):
+
             block.nonce += 1
+
             calculated_hash = block.hash_block()
 
         print("Wining Hash", calculated_hash)
@@ -86,6 +72,19 @@ class PyChain:
     def add_block(self, candidate_block):
         block = self.proof_of_work(candidate_block)
         self.chain += [block]
+
+    def is_valid(self):
+        block_hash = self.chain[0].hash_block()
+
+        for block in self.chain[1:]:
+            if block_hash != block.prev_hash:
+                print("Blockchain is invalid!")
+                return False
+
+            block_hash = block.hash_block()
+
+        print("Blockchain is Valid")
+        return True
 
 ################################################################################
 # Streamlit Code
@@ -101,26 +100,11 @@ def setup():
 
 pychain = setup()
 
+
 st.markdown("# PyChain")
-st.markdown("## Store Data in the Chain")
+st.markdown("## Store a Record in the PyChain")
 
 input_data = st.text_input("Block Data")
-
-################################################################################
-# Step 3:
-# Add a Streamlit component that can update the `difficulty` attribute of the `PyChain` class. To do so, complete the following steps:
-# 1. Add a Streamlit slider component that allows the user to select a
-# difficulty value from 1 to 5. Set the starting value to 4. Set this
-# component equal to a variable named `difficulty`.
-# 2.Update the `difficulty` data attribute of the `PyChain` data class (`pychain.difficulty`) with this new `difficulty` value.
-
-# @TODO:
-# Add a Streamlit slider named "Block Difficulty" that allows the user to update a difficulty value. Set this equal to the variable `difficulty`
-difficulty = st.slider("Difficulty", min_value=1, max_value=8)
-
-# @TODO
-# Update the `difficulty` data attribute of the `PyChain` data class (`pychain.difficulty`) with this new `difficulty` value
-pychain.difficulty = difficulty
 
 if st.button("Add Block"):
     prev_block = pychain.chain[-1]
@@ -137,17 +121,35 @@ pychain_df = pd.DataFrame(pychain.chain)
 
 st.write(pychain_df)
 
+################################################################################
+# Step 1:
+# Add a button with the text “Validate Blockchain” to your Streamlit interface.
+
+# @TODO:
+# Add a button with the text “Validate Blockchain” to your Streamlit interface.
+if(st.button("Validate Blockchain")):
+
+# Step 2:
+# Code the Validate Blockchain button so that when it’s clicked, it calls
+# the `is_valid` method of the `PyChain` data class and then writes the
+# result to the webpage.
+
+# @TODO:
+# Call the `is_valid` method of the `PyChain` data class and `write` the
+# result to the Streamlit interface
+    if(pychain.is_valid()):
+        st.write("Chain is valid.")
+    else:
+        st.write("Chain is not valid!")
 
 ################################################################################
-# Step 4:
+# Step 3:
 # Test the application.
 
 # Complete the following steps:
 # 1. In the terminal, navigate to the `Unsolved` folder for this activity.
 # 2. Run the Streamlit app in the terminal by using `streamlit run app.py`.
-# 3. Type some input text in the text box, and then click the Add Block button.
-# This adds a block to the chain.
-# 4. Change the difficulty, and then add another block. Observe how this affects the overall mining time (the time that it takes to add a block to the
-# chain with the proof of work enabled).
+# 3. Type some input text in the text box, and then click the Add Block button. This adds a block to the chain.
+# 4. Click the Validate Blockchain button to validate the current ledger.
 
 ################################################################################
