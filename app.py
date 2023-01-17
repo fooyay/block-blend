@@ -26,6 +26,12 @@ class Block:
 
         return sha.hexdigest()
 
+def hash_number(number):
+    sha = hashlib.sha256()
+    value = str(number).encode()
+    sha.update(value)
+    return sha.hexdigest()
+
 # creating a new block
 new_block = Block(data="My first block!", creator_id=42)
 
@@ -72,3 +78,13 @@ new_counter= Counter()
 new_counter.update_count()
 new_counter.update_count()
 print("The new count is: ", new_counter.count)
+
+count = 0
+hash = hash_number(count)
+print(f"The first hash is {hash}")
+while not hash.startswith("0000"):
+    count += 1
+    hash = hash_number(count)
+
+print(f"Found a hash with four zeros after {count} attempts")
+print(hash)
